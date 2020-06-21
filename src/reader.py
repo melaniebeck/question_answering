@@ -32,10 +32,11 @@ class Reader:
         model_name="twmkn9/distilbert-base-uncased-squad2",
         tokenizer_name="twmkn9/distilbert-base-uncased-squad2",
         top_n_per_doc=3,
-        use_gpu=False,
+        use_gpu=True,
         handle_impossible_answer=True
         ):
         
+        self.use_gpu = use_gpu
         self.model = pipeline('question-answering', model=model_name, tokenizer=tokenizer_name, device=int(use_gpu)-1)
         self.kwargs = {'topk':top_n_per_doc, 'handle_impossible_answer':handle_impossible_answer}
 
