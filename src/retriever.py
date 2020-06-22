@@ -37,22 +37,28 @@ class Retriever():
             "mappings": {
                 "dynamic": "strict",        
                 "properties": {
-                    "document_title": {"type": "text"},
-                    "document_url": {"type": "text"},
-                    "document_text_clean": {"type": "text"}
+                    "document_title": {"type": "text", "analyzer": "standard_analyzer"},
+                    "document_text": {"type": "text", "analyzer": "standard_analyzer"}
                     }
                 }
             },
-        corpus_filename = None
+        corpus_filename = None,
+        evidence_corpus = None,
         ):
         self.index_name = index_name
         self.settings = settings
+        self.corpus_filename = corpus_filename
         
-        if corpus_filename:
+        if corpus_filename and not evidence_corpus:
             evidence_corpus = load_corpus(corpus_filename)
-        else:
-            evidence_corpus = load_corpus('evidence_corpus_mini.pkl')
-
+        
+        if not corpus_filename and not evidence_corpus:
+            try:
+                self.corpus_filename = 'evidence_corpus_mini.pkl'
+                evidence_corpus = load_corpus(self.corpus_filename)
+            except:
+                print("Default corpus was not found.")
+  
         self.es = self.connect_es()
         self.create_es_index()
         self.load_es_index(evidence_corpus)
@@ -127,11 +133,20 @@ class Retriever():
 
         '''
         # construct query
+        """
         query = {
                 'query': {
                     'query_string': {
                         'query': re.sub('[^A-Za-z0-9]+', ' ', question_text),
                         'default_field': 'document_text_clean'
+                        }
+                    }
+                }
+        """
+        query = {
+                'query': {
+                    'match': {
+                        'document_text': question_text
                         }
                     }
                 }

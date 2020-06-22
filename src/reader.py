@@ -52,16 +52,15 @@ class Reader:
 
             # store these for each document for ranking at the end
             for pred in predictions:
-                if pred['answer']:
-                    answer = {
-                        'probability': pred['score'],
-                        'answer_text': pred['answer'],
-                        'start_index': pred['start'],
-                        'end_index': pred['end'],
-                        # TODO: we need to keep better track of which document this answer comes from
-                        'doc_id': doc['id']
-                    }
-                    all_predictions.append(answer)
+                answer = {
+                    'probability': pred['score'],
+                    'answer_text': pred['answer'],
+                    'start_index': pred['start'],
+                    'end_index': pred['end'],
+                    'doc_id': doc['id'],
+                    'title': doc['title']
+                }
+                all_predictions.append(answer)
         
         # Once we have all possible answers from all documents, sort them and take the top_n
         # This method does not take into account how highly ranked a document is (doc might have a score too)
