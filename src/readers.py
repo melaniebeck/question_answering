@@ -49,23 +49,37 @@ class Reader:
         for doc in documents:            
             inputs = {"question": question, "context": doc['text']}
             predictions = self.model(inputs, **self.kwargs)
+            
+            # we want the best prediction from each document
+            if len(predictions) == 1:
+                best = predictions
+            else:
+                best = predictions[0]
 
-            # store these for each document for ranking at the end
-            for pred in predictions:
-                answer = {
-                    'probability': pred['score'],
-                    'answer_text': pred['answer'],
-                    'start_index': pred['start'],
-                    'end_index': pred['end'],
+            answer = {
+                    'probability': best['score'],
+                    'answer_text': best['answer'],
+                    'start_index': best['start'],
+                    'end_index': best['end'],
                     'doc_id': doc['id'],
                     'title': doc['title']
                 }
-                all_predictions.append(answer)
-        
-        # Once we have all possible answers from all documents, sort them and take the top_n
-        # This method does not take into account how highly ranked a document is (doc might have a score too)
-        best_predictions = sorted(all_predictions, key=lambda x: x["probability"], reverse=True)[: self.kwargs["topk"]]
+            all_predictions.append(answer)
 
+        # Simple heuristic: 
+        # If the best prediction from each document is the null answer, return null
+        # Otherwise, return the highest scored non-null answer
+        null = True
+        for prediction in all_predictions:
+            if prediction['answer_text']:
+                null = False
+        
+        if not null:
+            # pull out only non-null answers
+            all_predictions = [prediction for prediction in all_predictions if prediction['answer_text']]
+
+        # sort predictions and return the highest ranked answer
+        best_predictions = sorted(all_predictions, key=lambda x: x["probability"], reverse=True)[: self.kwargs["topk"]]
         results = {
             'question': question,
             'answers': best_predictions
