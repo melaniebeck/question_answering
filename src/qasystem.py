@@ -26,8 +26,8 @@ class QASystem:
             evidence_corpus=evidence_corpus
             )
 
-    def query(self, question):
-        retriever_results = self.retriever.run_question_query(question, n_results=self.topk)
+    def query(self, question, topk):
+        retriever_results = self.retriever.run_question_query(question, n_results=topk)
 
         passages = retriever_results['hits']['hits']   #['_source']['document_text_clean']
         docs = []
@@ -44,7 +44,7 @@ class QASystem:
         answers = self.reader.predict(question, self.passages)
         return answers
 
-    def evaluate(self, examples, output_path='./', filename="qasystem_predictions_.pkl"):
+    def evaluate(self, examples, topk, output_path='./', filename="qasystem_predictions_.pkl"):
         # evaluate the end-to-end qa system
 
         # Process:
@@ -62,7 +62,7 @@ class QASystem:
             predictions = {}
             meta_predictions = {}
             for example in tqdm(examples):
-                reader_results = self.query(example.question_text)
+                reader_results = self.query(example.question_text, topk)
                 answers = reader_results['answers']
                 predictions[example.qas_id] = answers[0]['answer_text']
 
