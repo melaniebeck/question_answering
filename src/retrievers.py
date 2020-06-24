@@ -153,7 +153,4 @@ class Retriever():
 
         # execute query
         res = self.es.search(index=self.index_name, body=query, size=n_results)
-
-        #TODO run some checks / cleaning on the results - return something easier to parse
-
         return res
