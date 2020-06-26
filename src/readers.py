@@ -128,3 +128,25 @@ class Reader:
             'answers': best_predictions
         }
         return results
+
+    def predict_full_wiki(self, question, context, topk=None):
+        """
+        Andrew -- I modified one of the predict methods to more easily pass Squad-style examples
+                The other methods expect input from a retriever so there's a lot of highly-
+                specific hardcoded keywords, etc. Adjust this however you need!
+
+        Inputs:
+            question: str, question string
+            context: str, content of an article
+        """
+        self.kwargs['topk'] = topk
+        # since you'll be removing no-answer questions, this flag should be False
+        self.kwargs['handle_impossible_answer'] = False
+
+        inputs = {"question": question, "context": context}
+        predictions = self.model(inputs, **self.kwargs)
+        if topk == 1:
+            return predictions
+        
+        # for evaluating on squad, all you really need is the top prediction
+        return predictions[0]
